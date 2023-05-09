@@ -1,0 +1,94 @@
+package search
+
+import java.io.File
+import java.lang.Exception
+import java.util.*
+
+fun main(args: Array<String>) {
+    val m = File(args.last()).readLines()
+    val arrayOfString = m.toList()
+//    val arrayOfString = listOf<String>("Dwight Joseph djo@gmail.com",
+//            "Rene Webb webb@gmail.com", "Katie Jacobs", "Erick Harrington harrington@gmail.com",
+//            "Myrtle Medina", "Erick Burgess")
+    val a = mapCreator(arrayOfString)
+    while (true) {
+        println("\n"+
+                "=== Menu ===\n" +
+                "1. Find a person\n" +
+                "2. Print all people\n" +
+                "0. Exit")
+        when (readln().toInt()) {
+            1 -> {
+                println("Select a matching strategy: ALL, ANY, NONE")
+                val searchTypeInp = readln()
+                println("Enter a name or email to search all suitable people.")
+                searchFunction(a, arrayOfString, readln(),searchTypeInp)
+            }
+
+            2 -> {
+                arrayOfString.forEach(::println)
+            }
+
+            0 -> {
+                println("Bye!")
+                break
+            }
+
+            else -> {
+                println("Incorrect option! Try again.")
+                continue
+            }
+        }
+    }
+}
+
+fun mapCreator(list: List<String>): MutableMap<String, MutableList<Int>> {
+    val mutMapStr = mutableMapOf<String, MutableList<Int>>()
+    list.forEachIndexed { index, s -> s.lowercase(Locale.getDefault()).split(" ").forEach { mutMapStr.getOrPut(it)
+    { mutableListOf<Int>() }.add(index) } }
+    return mutMapStr
+}
+
+fun searchFunction(a: MutableMap<String, MutableList<Int>>, arrayOfString: List<String>, searchKey: String, searchTypeInp: String) {
+    try {
+        val searchArr = searchKey.split(" ")
+        val k = mutableListOf<MutableList<Int>>()
+        for (i in searchArr.indices) {
+            val c = a[searchArr[i].lowercase(Locale.getDefault())]
+            if (c != null) {
+                k.add(c)
+            }
+        }
+        if (searchTypeInp == "ALL") {
+            for (i in 1 until k.size) {
+                k[0] = (k[i] intersect k[0].toSet()).toMutableList()
+            }
+            for (i in k[0]) {
+                println(arrayOfString[i])
+            }
+        }
+        if (searchTypeInp == "ANY" || searchTypeInp == "NONE") {
+            var listop: MutableSet<Int> = k[0].toSet() as MutableSet<Int>
+            for (i in 1 until k.size) {
+                listop = ((k[i] union listop.toSet()) as MutableSet<Int>)
+            }
+            if (searchTypeInp == "ANY") {
+                for (i in listop) {
+                    println(arrayOfString[i])
+                }
+            }
+            if (searchTypeInp == "NONE") {
+                val s = mutableSetOf<Int>()
+                for (i in arrayOfString.indices) {
+                    s.add(i)
+                }
+                listop = (s subtract listop.toSet()).toMutableSet()
+                for (i in listop) {
+                    println(arrayOfString[i])
+                }
+            }
+        }
+    } catch (e: Exception) {
+        println("No matching people found.")
+    }
+}
